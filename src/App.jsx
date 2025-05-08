@@ -5,8 +5,8 @@ import Home from './pages/Home'
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
-        <div className="w-full max-w-7xl">
+      <div className="min-h-screen bg-gray-100">
+        <div className="w-full">
           <Routes>
             <Route path="/" element={<Home />} />
           </Routes>
