@@ -6,10 +6,43 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(),tailwindcss()],
   server: {
-    port: 3000,
+    port: 5173,
     proxy: {
-      '/api': 'http://localhost:8080'
+      '/users': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/posts': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/categories': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/learning-plan': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/helpdesk': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/comments': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/replies': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      }
     }
   }
-
 })
