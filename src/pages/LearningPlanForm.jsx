@@ -198,31 +198,52 @@ const LearningPlanForm = () => {
         resources: formData.resources.filter(r => r.trim() !== '')
       };
       
-      console.log('Submitting form data:', cleanedFormData);
+      console.log('Form data to submit:', cleanedFormData);
       
       if (isEditMode) {
-        await updateLearningPlan(planId, cleanedFormData);
+        try {
+          const result = await updateLearningPlan(planId, cleanedFormData);
+          console.log('Learning plan updated successfully:', result);
+          navigate('/learning-plans');
+        } catch (err) {
+          console.error('Error updating learning plan:', err);
+          setError(`Failed to update learning plan: ${err.message || 'Unknown error'}`);
+        }
       } else {
-        // For test route, use a test user ID if not authenticated
-        let userId = currentUser?.id || currentUser?.userId;
+        // Get user ID with fallbacks
+        let userId = null;
         
-        // If on test route and no user is available, use a test ID
-        if (isTestRoute && !userId) {
-          userId = 1; // Use a test user ID
-          console.log('Using test user ID:', userId);
-        } else if (!userId) {
-          console.error('User ID missing. Current user:', currentUser);
-          throw new Error('User ID is required to create a learning plan. Please log in again.');
+        if (currentUser) {
+          // Try various properties where ID might be stored
+          userId = currentUser.id || currentUser.userId;
+          console.log('Using user ID from current user:', userId);
         }
         
-        console.log('Creating plan with user ID:', userId);
-        await createLearningPlan(userId, cleanedFormData);
+        // For test route, use a fallback ID
+        if (!userId && isTestRoute) {
+          userId = 1;
+          console.log('Using test user ID:', userId);
+        }
+        
+        if (!userId) {
+          setError('User ID not found. Please log in again.');
+          setSubmitting(false);
+          return;
+        }
+        
+        try {
+          console.log('Creating learning plan with user ID:', userId);
+          const result = await createLearningPlan(userId, cleanedFormData);
+          console.log('Learning plan created successfully:', result);
+          navigate('/learning-plans');
+        } catch (err) {
+          console.error('Error creating learning plan:', err);
+          setError(`Failed to create learning plan: ${err.response?.data || err.message || 'Unknown error'}`);
+        }
       }
-      
-      navigate('/learning-plans');
     } catch (err) {
-      console.error('Error saving learning plan:', err);
-      setError(`Failed to ${isEditMode ? 'update' : 'create'} learning plan. ${err.message || 'Please try again later.'}`);
+      console.error('Unexpected error:', err);
+      setError(`An unexpected error occurred: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
