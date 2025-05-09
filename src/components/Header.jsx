@@ -1,29 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { Menu, X } from 'lucide-react';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, currentUser } = useAuth();
 
   const navLinks = [
     { name: 'Home', path: '/' },
-  ];
-  
-  // Links that are visible only when authenticated
-  const authLinks = [
-    { name: 'My Plans', path: '/learning-plans' },
+    { name: 'My Plans', path: '/learningplans' },
     { name: 'Posts', path: '/posts' },
     { name: 'Help Desk', path: '/helpdesk' },
-  ];
-  
-  // Add auth links to nav if user is authenticated
-  const displayLinks = [
-    ...navLinks,
-    ...(isAuthenticated ? authLinks : []),
     { name: 'About', path: '/about' },
+    { name: 'Login', path: '/login' }
   ];
 
   return (
@@ -35,8 +24,8 @@ const Header = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {displayLinks.map((link) => (
+        <nav className="hidden md:flex space-x-6">
+          {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
@@ -47,35 +36,6 @@ const Header = () => {
               {link.name}
             </Link>
           ))}
-          
-          {isAuthenticated ? (
-            <Link 
-              to="/profile"
-              className="flex items-center space-x-2 ml-4 text-gray-700 hover:text-blue-600"
-            >
-              <User className="w-5 h-5" />
-              <span className="text-lg">
-                {currentUser?.username || 'Profile'}
-              </span>
-            </Link>
-          ) : (
-            <div className="flex items-center space-x-4 ml-4">
-              <Link 
-                to="/login"
-                className={`text-lg text-gray-700 hover:text-blue-600 ${
-                  location.pathname === '/login' ? 'font-semibold text-blue-600' : ''
-                }`}
-              >
-                Login
-              </Link>
-              <Link 
-                to="/register"
-                className="text-lg px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Sign up
-              </Link>
-            </div>
-          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -90,7 +50,7 @@ const Header = () => {
       {/* Mobile Nav */}
       {menuOpen && (
         <nav className="md:hidden px-4 pb-4 space-y-2 bg-white">
-          {displayLinks.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
@@ -102,36 +62,6 @@ const Header = () => {
               {link.name}
             </Link>
           ))}
-          
-          {isAuthenticated ? (
-            <Link 
-              to="/profile"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center space-x-2 text-gray-700 py-1"
-            >
-              <User className="w-5 h-5" />
-              <span>{currentUser?.username || 'Profile'}</span>
-            </Link>
-          ) : (
-            <>
-              <Link 
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className={`block text-gray-700 py-1 ${
-                  location.pathname === '/login' ? 'font-semibold text-blue-600' : ''
-                }`}
-              >
-                Login
-              </Link>
-              <Link 
-                to="/register"
-                onClick={() => setMenuOpen(false)}
-                className="block text-gray-700 py-1 font-semibold text-blue-600"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
         </nav>
       )}
     </header>
