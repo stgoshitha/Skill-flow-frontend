@@ -1,6 +1,11 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
+import Login from './pages/Login'
+import Profile from './pages/Profile'
+import CreateHelpDeskForm from './pages/helpDeskPages/CreateHelpDeskForm'
+import MyHelpDesk from './pages/helpDeskPages/MyHelpDesk'
+import HelpDesk from './pages/helpDeskPages/HelpDesk'
 
 function App() {
   return (
@@ -9,6 +14,11 @@ function App() {
         <div className="w-full">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/helps" element={<CreateHelpDeskForm />} />
+            <Route path="/myHelpDesk" element={<MyHelpDesk />} />
+            <Route path="/helpDesk" element={<HelpDesk />} />
           </Routes>
         </div>
       </div>
