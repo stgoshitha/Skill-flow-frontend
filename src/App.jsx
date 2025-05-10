@@ -10,6 +10,7 @@ import Signup from './pages/Signup'
 import LearningPlans from './pages/LearningPlans'
 import LearningPlanDetail from './pages/LearningPlanDetail'
 import LearningPlanForm from './pages/LearningPlanForm'
+import About from './pages/About'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/helps" element={<CreateHelpDeskForm />} />
             <Route path="/myHelpDesk" element={<MyHelpDesk />} />
             <Route path="/helpDesk" element={<HelpDesk />} />
+            <Route path="/about" element={<About />} />
             
             {/* Learning Plan Routes */}
             <Route path="/learning-plans" element={<LearningPlans />} />
