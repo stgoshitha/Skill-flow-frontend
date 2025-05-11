@@ -190,83 +190,38 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Section - Modern Cards with Gradients */}
-      <section className="py-24 bg-gray-50 relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-blue-600/5 to-transparent"></div>
-        <div className="absolute -left-40 -bottom-40 w-80 h-80 bg-blue-100 rounded-full opacity-30"></div>
-        <div className="absolute -right-40 -top-40 w-80 h-80 bg-indigo-100 rounded-full opacity-30"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      {/* Features Section with Hover Effects */}
+      <section className="py-24 px-4 bg-gray-50">
+        <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-gray-800">
-              How Skill-Flow Works
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our platform provides everything you need to structure your learning and achieve your goals faster.
+            <h2 className="text-3xl md:text-4xl font-bold mb-5">Everything you need to succeed</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Skill-Flow provides the tools and community support to help you on your learning journey
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature) => (
-              <div 
-                key={feature.id} 
-                className="group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+              <Link
+                key={feature.id}
+                to={
+                  feature.id === 1 
+                    ? "/create-learning-plan" // Create Learning Plans
+                    : feature.id === 2 
+                      ? "/create-post" // Share Knowledge
+                      : "/helpdesk" // Get Help
+                }
+                className={`bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group`}
               >
-                <div className={`bg-gradient-to-r ${feature.color} p-6 flex justify-center`}>
-                  <div className="h-16 w-16 rounded-full bg-white/20 flex items-center justify-center">
+                <div className={`p-8 text-center`}>
+                  <div className={`w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r ${feature.color} flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300`}>
                     {feature.icon}
                   </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </div>
-                <div className="p-6 bg-white">
-                  <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-600 transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
+              </Link>
             ))}
-          </div>
-
-          {/* Key Features Highlight Box */}
-          <div className="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-            <div className="p-8 md:p-12">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Why choose Skill-Flow?</h3>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-1">Track your learning progress in one place</h4>
-                    <p className="text-gray-600">Monitor your advancement and stay motivated with visual progress indicators</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-1">Connect with learning resources seamlessly</h4>
-                    <p className="text-gray-600">Easily link to helpful tutorials, documentation, and educational materials</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-1">Organize and share your knowledge journey</h4>
-                    <p className="text-gray-600">Create structured plans and collaborate with others to accelerate learning</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

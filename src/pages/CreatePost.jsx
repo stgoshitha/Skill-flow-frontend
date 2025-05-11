@@ -86,35 +86,39 @@ const CreatePost = () => {
       return;
     }
 
-    // Get user data
+    // Validate form data
+    if (!formData.title || !formData.description || !formData.categoryId) {
+      setError('Please fill in all required fields.');
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Get user data
       const userResponse = await axios.get("http://localhost:8080/users/by-session", {
         params: { sessionId },
         withCredentials: true
       });
       
       const userId = userResponse.data.id;
-      
-      // Validate form data
-      if (!formData.title || !formData.description) {
-        setError('Please fill in all required fields.');
-        setLoading(false);
-        return;
-      }
 
       if (isEditMode) {
-        // Update existing post
+        // Update existing post - Use JSON body for the PUT request
         await axios.put(
           `http://localhost:8080/posts/${id}`,
           {
             title: formData.title,
             description: formData.description,
-            categoryId: formData.categoryId
+            categoryId: formData.categoryId // Include categoryId in request body
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
           }
         );
       } else {
         // Create new post
-        // Create FormData object for file upload
         const postData = new FormData();
         postData.append('title', formData.title);
         postData.append('description', formData.description);
