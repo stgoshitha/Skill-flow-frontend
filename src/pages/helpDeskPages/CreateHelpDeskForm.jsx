@@ -72,7 +72,7 @@ const CreateHelpDeskForm = () => {
           <h4>Help Desk Created</h4>
           <p><strong>ID:</strong> {response.id}</p>
           <p><strong>Question:</strong> {response.question}</p>
-          <p><strong>User:</strong> {response.userName}</p>
+          <p><strong>User:</strong> {response.username}</p>
         </div>
       )}
 

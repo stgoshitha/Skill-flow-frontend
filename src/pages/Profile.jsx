@@ -29,6 +29,7 @@ const Profile = () => {
     })
     .then(res => {
       setUser(res.data);
+      localStorage.setItem('user', JSON.stringify(res.data));
       setFormData({
         username: res.data.username,
         email: res.data.email,
