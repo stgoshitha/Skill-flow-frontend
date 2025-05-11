@@ -17,7 +17,18 @@ const LearningPlans = () => {
         const response = await axios.get('http://localhost:8080/learning-plan', {
           withCredentials: true
         });
-        setLearningPlans(response.data);
+        console.log('Learning plans data:', response.data);
+        
+        // Add default progress value if missing
+        const plansWithProgress = response.data.map(plan => {
+          if (plan.progress === undefined || plan.progress === null) {
+            console.log(`Adding default progress for plan ${plan.id}`);
+            return { ...plan, progress: 0 };
+          }
+          return plan;
+        });
+        
+        setLearningPlans(plansWithProgress);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching learning plans:', err);
@@ -157,11 +168,11 @@ const LearningPlans = () => {
                             {plan.title}
                           </h2>
                           <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                            progress > 75 ? 'bg-green-100 text-green-800' : 
-                            progress > 25 ? 'bg-blue-100 text-blue-800' : 
+                            plan.progress > 75 ? 'bg-green-100 text-green-800' : 
+                            plan.progress > 25 ? 'bg-blue-100 text-blue-800' : 
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {progress}% Complete
+                            {plan.progress}% Complete
                           </span>
                         </div>
                         
@@ -170,18 +181,18 @@ const LearningPlans = () => {
                         <div className="mb-4 mt-6">
                           <div className="flex justify-between items-center mb-1 text-xs text-gray-600">
                             <span>Progress</span>
-                            <span className="font-medium">{progress}%</span>
+                            <span className="font-medium">{plan.progress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                             <div
                               className={`h-2.5 rounded-full ${
-                                progress > 75 ? 'bg-green-500' : 
-                                progress > 50 ? 'bg-blue-500' : 
-                                progress > 25 ? 'bg-blue-400' : 
+                                plan.progress > 75 ? 'bg-green-500' : 
+                                plan.progress > 50 ? 'bg-blue-500' : 
+                                plan.progress > 25 ? 'bg-blue-400' : 
                                 'bg-blue-300'
                               }`}
                               style={{ 
-                                width: `${progress}%`,
+                                width: `${plan.progress}%`,
                                 minWidth: '2px'
                               }}
                             ></div>
