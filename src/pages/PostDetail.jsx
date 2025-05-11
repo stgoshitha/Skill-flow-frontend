@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import CommentService from '../services/CommentService';
 import CommentReplyService from '../services/CommentReplyService';
 import CommentItem from '../components/CommentItem';
+import PostService from '../services/PostService';
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -16,6 +17,7 @@ const PostDetail = () => {
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [liking, setLiking] = useState(false);
   const navigate = useNavigate();
 
   // Get current user from localStorage
@@ -24,15 +26,15 @@ const PostDetail = () => {
   useEffect(() => {
     const fetchPostAndComments = async () => {
       try {
-        // Fetch post details
-        const postResponse = await axios.get(`http://localhost:8080/posts/${id}`);
-        console.log('Post data:', postResponse.data);
-        setPost(postResponse.data);
+        // Fetch post details using PostService
+        const postData = await PostService.getPostById(id);
+        console.log('Post data:', postData);
+        setPost(postData);
         
         // The post should already include its comments
-        if (postResponse.data.comments) {
+        if (postData.comments) {
           const commentsWithReplies = await Promise.all(
-            postResponse.data.comments.map(async (comment) => {
+            postData.comments.map(async (comment) => {
               // If the comment already has replies, return as is
               if (comment.commentReply && comment.commentReply.length > 0) {
                 return comment;
@@ -129,7 +131,7 @@ const PostDetail = () => {
     }
     
     try {
-      await axios.delete(`http://localhost:8080/posts/${id}`);
+      await PostService.deletePost(id);
       navigate('/posts');
     } catch (err) {
       console.error('Error deleting post:', err);
@@ -138,18 +140,44 @@ const PostDetail = () => {
   };
 
   const handleNextImage = () => {
-    if (post.imageUrl && post.imageUrl.length > 1) {
+    const images = post.imageUrls || post.imageUrl;
+    if (images && images.length > 1) {
       setCurrentImageIndex((prevIndex) => 
-        prevIndex === post.imageUrl.length - 1 ? 0 : prevIndex + 1
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
       );
     }
   };
 
   const handlePrevImage = () => {
-    if (post.imageUrl && post.imageUrl.length > 1) {
+    const images = post.imageUrls || post.imageUrl;
+    if (images && images.length > 1) {
       setCurrentImageIndex((prevIndex) => 
-        prevIndex === 0 ? post.imageUrl.length - 1 : prevIndex - 1
+        prevIndex === 0 ? images.length - 1 : prevIndex - 1
       );
+    }
+  };
+
+  const handleLikePost = async () => {
+    if (!currentUser) {
+      alert('You must be logged in to like a post.');
+      return;
+    }
+    
+    if (liking) return;
+    
+    setLiking(true);
+    try {
+      await PostService.likePost(post.id);
+      // Update the post's like count in the UI
+      setPost({
+        ...post,
+        likedCount: (post.likedCount || 0) + 1
+      });
+    } catch (err) {
+      console.error('Error liking post:', err);
+      alert('Failed to like the post. Please try again.');
+    } finally {
+      setLiking(false);
     }
   };
 
@@ -251,17 +279,22 @@ const PostDetail = () => {
               </div>
 
               {/* Post Images */}
-              {post.imageUrl && post.imageUrl.length > 0 && (
+              {((post.imageUrls && post.imageUrls.length > 0) || (post.imageUrl && post.imageUrl.length > 0)) && (
                 <div className="relative">
                   <div className="aspect-w-16 aspect-h-9">
                     <img
-                      src={post.imageUrl[currentImageIndex]}
+                      src={post.imageUrls ? post.imageUrls[currentImageIndex] : post.imageUrl[currentImageIndex]}
                       alt={`${post.title} - Image ${currentImageIndex + 1}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log(`Image error for post ${post.id}`);
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/800x450?text=Image+Not+Available';
+                      }}
                     />
                   </div>
                   
-                  {post.imageUrl.length > 1 && (
+                  {((post.imageUrls && post.imageUrls.length > 1) || (post.imageUrl && post.imageUrl.length > 1)) && (
                     <>
                       <button 
                         onClick={handlePrevImage}
@@ -282,7 +315,7 @@ const PostDetail = () => {
                       
                       {/* Image counter */}
                       <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-md">
-                        {currentImageIndex + 1} / {post.imageUrl.length}
+                        {currentImageIndex + 1} / {post.imageUrls ? post.imageUrls.length : post.imageUrl.length}
                       </div>
                     </>
                   )}
@@ -326,7 +359,17 @@ const PostDetail = () => {
                 
                 {/* Share and Actions */}
                 <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-100">
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-4">
+                    <button 
+                      onClick={handleLikePost}
+                      disabled={liking}
+                      className={`flex items-center ${liking ? 'opacity-70 cursor-not-allowed' : 'hover:text-blue-600'} ${post.likedCount > 0 ? 'text-blue-600' : 'text-gray-500'}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill={post.likedCount > 0 ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                      </svg>
+                      {liking ? 'Liking...' : `Like${post.likedCount ? ` (${post.likedCount})` : ''}`}
+                    </button>
                     <button className="flex items-center text-gray-500 hover:text-blue-600">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />

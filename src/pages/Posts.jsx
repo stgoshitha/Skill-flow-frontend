@@ -3,12 +3,14 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import PostService from '../services/PostService';
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [likingPostId, setLikingPostId] = useState(null);
   const navigate = useNavigate();
   
   // Get current user from localStorage
@@ -17,15 +19,15 @@ const Posts = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/posts');
-        console.log('Posts data:', response.data);
+        const response = await PostService.getAllPosts();
+        console.log('Posts data:', response);
         
         // Log image URLs for debugging
-        response.data.forEach(post => {
+        response.forEach(post => {
           console.log(`Post ID ${post.id} - Image URL:`, post.imageUrl);
         });
         
-        setPosts(response.data);
+        setPosts(response);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching posts:', err);
@@ -45,12 +47,43 @@ const Posts = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:8080/posts/${postId}`);
+      await PostService.deletePost(postId);
       // Remove the deleted post from state
       setPosts(posts.filter(post => post.id !== postId));
     } catch (err) {
       console.error('Error deleting post:', err);
       alert('Failed to delete post. Please try again.');
+    }
+  };
+
+  const handleLikePost = async (postId, e) => {
+    e.stopPropagation(); // Prevent navigation when clicking like
+    
+    if (!currentUser) {
+      alert('You must be logged in to like a post.');
+      return;
+    }
+    
+    if (likingPostId === postId) return;
+    
+    setLikingPostId(postId);
+    try {
+      await PostService.likePost(postId);
+      // Update the post's like count in the UI
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            likedCount: (post.likedCount || 0) + 1
+          };
+        }
+        return post;
+      }));
+    } catch (err) {
+      console.error('Error liking post:', err);
+      alert('Failed to like the post. Please try again.');
+    } finally {
+      setLikingPostId(null);
     }
   };
 
@@ -67,13 +100,23 @@ const Posts = () => {
 
   // Helper function to get image URL
   const getImageUrl = (post) => {
+    console.log("Post image data:", post);
+    
+    // Check for imageUrls field (from PostResponseDTO)
+    if (post.imageUrls && Array.isArray(post.imageUrls) && post.imageUrls.length > 0) {
+      console.log("Using imageUrls field:", post.imageUrls[0]);
+      return post.imageUrls[0];
+    }
+    
     // If imageUrl is a string (direct URL)
     if (post.imageUrl && typeof post.imageUrl === 'string') {
+      console.log("Using string imageUrl:", post.imageUrl);
       return post.imageUrl;
     }
     
     // If imageUrl is an array of strings
     if (post.imageUrl && Array.isArray(post.imageUrl) && post.imageUrl.length > 0) {
+      console.log("Using array imageUrl:", post.imageUrl[0]);
       return post.imageUrl[0];
     }
     
@@ -82,6 +125,7 @@ const Posts = () => {
       try {
         const parsedUrls = JSON.parse(post.imageUrl);
         if (Array.isArray(parsedUrls) && parsedUrls.length > 0) {
+          console.log("Using parsed JSON imageUrl:", parsedUrls[0]);
           return parsedUrls[0];
         }
       } catch (e) {
@@ -91,15 +135,18 @@ const Posts = () => {
     
     // If imageUrl is in a nested structure
     if (post.imageUrl && typeof post.imageUrl === 'object' && post.imageUrl.url) {
+      console.log("Using nested imageUrl.url:", post.imageUrl.url);
       return post.imageUrl.url;
     }
     
     // If there's a different property for images
     if (post.image) {
+      console.log("Using post.image:", post.image);
       return post.image;
     }
     
     // No valid image found
+    console.log("No valid image found for post:", post.id);
     return null;
   };
 
@@ -274,13 +321,25 @@ const Posts = () => {
                     )}
                     
                     <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                      <Link
-                        to={`/post/${post.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Read More
-                      </Link>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={(e) => handleLikePost(post.id, e)}
+                          disabled={likingPostId === post.id}
+                          className={`flex items-center ${likingPostId === post.id ? 'opacity-70 cursor-not-allowed' : 'hover:text-blue-600'} ${post.likedCount > 0 ? 'text-blue-600' : 'text-gray-500'}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill={post.likedCount > 0 ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                          </svg>
+                          {post.likedCount ? `${post.likedCount}` : 'Like'}
+                        </button>
+                        <Link
+                          to={`/post/${post.id}`}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Read More
+                        </Link>
+                      </div>
                       {currentUser && post.user && currentUser.id === post.user.id && (
                         <div className="flex space-x-2">
                           <button
