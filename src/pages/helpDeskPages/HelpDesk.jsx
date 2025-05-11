@@ -46,7 +46,8 @@ const HelpDesk = () => {
     }
 
     try {
-      await axios.post(
+      // Submit the reply
+      const response = await axios.post(
         `http://localhost:8080/replies`,
         { reply_text },
         {
@@ -66,8 +67,8 @@ const HelpDesk = () => {
         [helpDeskId]: true
       }));
       
-      // Fetch the updated replies
-      loadReplies(helpDeskId);
+      // Get all replies and filter by helpdesk ID
+      await loadAllRepliesAndFilter();
       
       // Auto-hide success message after 3 seconds
       setTimeout(() => {
@@ -79,12 +80,42 @@ const HelpDesk = () => {
     }
   };
 
+  // Load all replies and filter them by helpdesk ID
+  const loadAllRepliesAndFilter = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/replies`);
+      
+      // Group replies by helpdesk ID
+      const repliesByHelpDesk = response.data.reduce((acc, reply) => {
+        const helpDeskId = reply.helpDeskId;
+        if (!acc[helpDeskId]) {
+          acc[helpDeskId] = [];
+        }
+        acc[helpDeskId].push(reply);
+        return acc;
+      }, {});
+      
+      setReplies(repliesByHelpDesk);
+    } catch (error) {
+      console.error("Error fetching all replies:", error);
+    }
+  };
+
   const loadReplies = async (helpDeskId) => {
     setLoadingReplies((prev) => ({ ...prev, [helpDeskId]: true }));
     
     try {
-      const response = await axios.get(`http://localhost:8080/replies/helpdesk/${helpDeskId}`);
-      setReplies((prev) => ({ ...prev, [helpDeskId]: response.data }));
+      // Get all replies and filter by helpdesk ID
+      const response = await axios.get(`http://localhost:8080/replies`);
+      
+      // Filter replies for the specific helpdesk ID
+      const filteredReplies = response.data.filter(reply => reply.helpDeskId === helpDeskId);
+      
+      // Update the replies state
+      setReplies(prev => ({
+        ...prev,
+        [helpDeskId]: filteredReplies
+      }));
     } catch (error) {
       console.error("Error fetching replies:", error);
     } finally {
@@ -117,9 +148,7 @@ const HelpDesk = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:8080/replies/${replyId}`, {
-        params: { userId: currentUserId },
-      });
+      await axios.delete(`http://localhost:8080/replies/${replyId}`);
       loadReplies(helpDeskId);
     } catch (error) {
       console.error("Error deleting reply:", error);
@@ -142,8 +171,7 @@ const HelpDesk = () => {
 
     try {
       await axios.put(`http://localhost:8080/replies/${replyId}`, {
-        reply_text: newText,
-        userId: currentUserId,
+        reply_text: newText
       });
 
       setEditingReplyId(null);
@@ -153,6 +181,11 @@ const HelpDesk = () => {
       alert(error?.response?.data || "Failed to update reply.");
     }
   };
+
+  // Load all replies when component mounts
+  useEffect(() => {
+    loadAllRepliesAndFilter();
+  }, []);
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-[60vh]">
