@@ -11,6 +11,9 @@ import LearningPlans from './pages/LearningPlans'
 import LearningPlanDetail from './pages/LearningPlanDetail'
 import LearningPlanForm from './pages/LearningPlanForm'
 import About from './pages/About'
+import Posts from './pages/Posts'
+import CreatePost from './pages/CreatePost'
+import PostDetail from './pages/PostDetail'
 
 function App() {
   return (
@@ -33,6 +36,12 @@ function App() {
             <Route path="/learning-plan/:id" element={<LearningPlanDetail />} />
             <Route path="/create-learning-plan" element={<LearningPlanForm />} />
             <Route path="/edit-learning-plan/:id" element={<LearningPlanForm />} />
+            
+            {/* Post Routes */}
+            <Route path="/posts" element={<Posts />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/post/:id" element={<PostDetail />} />
+            <Route path="/edit-post/:id" element={<CreatePost />} />
           </Routes>
         </div>
       </div>
